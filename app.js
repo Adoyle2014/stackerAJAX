@@ -6,6 +6,14 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+
+	$('.inspiration-getter').submit( function(event){
+		// zero out results if previous search has run
+		$('.results').html('');
+		// get the value of the tags the user submitted
+		var tags = $(this).find("input[name='answerers']").val();
+		getUsers(tags);
+	});
 });
 
 // this function takes the question object returned by StackOverflow 
@@ -31,17 +39,42 @@ var showQuestion = function(question) {
 
 	// set some properties related to asker
 	var asker = result.find('.asker');
-	asker.html('<p>Name: <a target="_blank" href=http://stackoverflow.com/users/' + question.owner.user_id + ' >' +
-													question.owner.display_name +
-												'</a>' +
-							'</p>' +
- 							'<p>Reputation: ' + question.owner.reputation + '</p>'
-	);
+	asker.html('<p>Name: <a target="_blank" href=http://stackoverflow.com/users/' + question.owner.user_id + ' >' + question.owner.display_name + '</a>' + '</p>' + '<p>Reputation: ' + question.owner.reputation + '</p>');
 
 	return result;
 };
 
+var showUser = function(user) {
+	console.log(user)
+	// clone our result template code
+	var result = $('.templates .user').clone();
+	
+	// Set the user properties in result
+	// set some properties related to asker
+	var userName = result.find('.user-info');
 
+	userName.html('<p><a target="_blank" href=http://stackoverflow.com/users/' + user.user.user_id + ' >' + user.user.display_name + '</a>' + '</p>');
+
+	var userRep = result.find('.userRep');
+	userRep.html('<p><span class="title">Reputation: </span>' + user.user.reputation + '</p>')
+
+	//set the avatar property in result
+	var avatar = result.find('.user-profile-image');
+
+	avatar.html("<img src= " + user.user.profile_image + ">");
+	
+	
+	var acceptRate = result.find('.acceptRate');
+	acceptRate.html('<p><span class="title">Accepted Rate: </span>' + user.user.accept_rate + '%</p>');
+
+	var postCount = result.find('.postCount');
+	postCount.html("<p><span class='title'>Total Posts: </span>" + user.post_count + "</p>");
+
+	var score = result.find('.score');
+	score.html("<p><span class='title'>Score: </span>" + user.score + "</p>")
+
+	return result;
+};
 // this function takes the results object from StackOverflow
 // and creates info about search results to be appended to DOM
 var showSearchResults = function(query, resultNum) {
@@ -61,10 +94,11 @@ var showError = function(error){
 var getUnanswered = function(tags) {
 	
 	// the parameters we need to pass in our request to StackOverflow's API
-	var request = {tagged: tags,
-								site: 'stackoverflow',
-								order: 'desc',
-								sort: 'creation'};
+	var request = {	tagged: tags,
+				site: 'stackoverflow',
+				order: 'desc',
+				sort: 'creation'
+			};
 	
 	var result = $.ajax({
 		url: "http://api.stackexchange.com/2.2/questions/unanswered",
@@ -72,6 +106,7 @@ var getUnanswered = function(tags) {
 		dataType: "jsonp",
 		type: "GET",
 		})
+
 	.done(function(result){
 		var searchResults = showSearchResults(request.tagged, result.items.length);
 
@@ -88,5 +123,32 @@ var getUnanswered = function(tags) {
 	});
 };
 
+var getUsers = function(tags) {
+	
+	// the parameters we need to pass in our request to StackOverflow's API
+	var request = {	site: 'stackoverflow'};
+	
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags/" + tags + "/top-answerers/all_time",
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+		})
+	
+	.done(function(result){
+		var searchResults = showSearchResults(tags, result.items.length);
+
+		$('.search-results').html(searchResults);
+
+		$.each(result.items, function(i, item) {
+			var user = showUser(item);
+			$('.results').append(user);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+};
 
 

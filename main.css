@@ -37,10 +37,42 @@
 .result {
 	border: 1px solid black;
 	padding: 5px;
-	margin: 0 auto 1em auto;
+	margin: 0 auto 0 auto;
+	width: 550px;
 }
 
 .error {
 	background-color: #F78181;
 	padding: 1em;
+}
+
+.result h2 {
+
+}
+
+
+
+.result p {
+	width: 200px;
+	position: relative;
+
+	
+}
+
+div.user-profile-image {
+	position: relative;
+	width: 200px;
+	top: -190px;
+	float: right;
+}
+
+.user-profile-image img {
+	border: 2px solid black;
+	border-radius: 10px;
+	width: 175px;
+}
+
+span.title {
+	font-size: 1em;
+	font-weight: bold;
 }
